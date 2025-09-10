@@ -124,7 +124,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = [ BASE_DIR / "satellites" / "static" ]
 TEMPLATE_DIR = BASE_DIR / "satellites" / "templates"
 from pathlib import Path
 TEMPLATES[0]["DIRS"] = [TEMPLATE_DIR]
