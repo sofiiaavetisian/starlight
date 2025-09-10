@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "rest_framework",     
+    "satellites", 
 ]
 
 MIDDLEWARE = [
@@ -120,3 +122,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+STATIC_URL = "static/"
+STATICFILES_DIRS = [ BASE_DIR / "satellites" / "static" ]
+TEMPLATE_DIR = BASE_DIR / "satellites" / "templates"
+from pathlib import Path
+TEMPLATES[0]["DIRS"] = [TEMPLATE_DIR]
