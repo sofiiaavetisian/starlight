@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import TLE, Favorite
+
+admin.site.register(TLE)
+admin.site.register(Favorite)
