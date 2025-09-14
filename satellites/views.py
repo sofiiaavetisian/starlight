@@ -1,5 +1,7 @@
 from django.shortcuts import render
-
+from rest_framework import generics, filters
+from .models import TLE
+from .serializers import TLESerializer
 from .services.tle_fetcher import get_or_refresh_tle, TLENotFound
 
 @api_view(["GET"])
@@ -22,4 +24,17 @@ def positions_batch(request):
         except TLENotFound:
             continue
     return Response(out)
+
+class SatelliteListView(generics.ListAPIView):
+    """
+    Read-only catalog list. Supports ?search=iss or ?search=25544
+    and simple ordering by name or norad_id: ?ordering=name or ?ordering=-norad_id
+    """
+    queryset = TLE.objects.all().order_by("norad_id")
+    serializer_class = TLESerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["name", "norad_id"]
+    ordering_fields = ["name", "norad_id"]
+    pagination_class = None  # set DRF pagination if you want pages
+
 
