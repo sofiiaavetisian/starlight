@@ -3,6 +3,16 @@ from rest_framework import generics, filters
 from .models import TLE
 from .serializers import TLESerializer
 from .services.tle_fetcher import get_or_refresh_tle, TLENotFound
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework import viewsets
+from .models import Favorite
+from .serializers import FavoriteSerializer
+
+class FavoriteViewSet(viewsets.ModelViewSet):
+    queryset = Favorite.objects.all()
+    serializer_class = FavoriteSerializer
 
 @api_view(["GET"])
 def position_single(request, norad_id: int):
@@ -37,4 +47,6 @@ class SatelliteListView(generics.ListAPIView):
     ordering_fields = ["name", "norad_id"]
     pagination_class = None  # set DRF pagination if you want pages
 
-
+@api_view(["POST"])
+def import_tle_catalog(request):
+    return Response({"detail": "Not implemented yet."})
