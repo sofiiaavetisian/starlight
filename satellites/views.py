@@ -3,6 +3,7 @@ from rest_framework import generics, filters
 from .models import TLE
 from .serializers import TLESerializer
 from .services.tle_fetcher import get_or_refresh_tle, TLENotFound
+from .services.propagation import propagate_now
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
