@@ -11,7 +11,6 @@ def _eci_to_ecef(r_teme_km, v_teme_kms, dt: datetime):
     return r_teme_km
 
 # for this function, i simplified teh sgp4 algorithm available online to meet my basic needs
-
 # we need this function to propagate the satellite position to the current time based on its time and orbit epoch
 def propagate_now(line1: str, line2: str):
     now = datetime.now(timezone.utc)
