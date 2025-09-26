@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Starlight — Satellite Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'satellites/home.css' %}" />
+</head>
+<body>
+  <div id="stars"></div>
+  <header class="site-header">
+    <div class="brand">Starlight</div>
+    <nav>
+      <a href="/api/satellites/">Catalog</a>
+      <a href="#how">How it works</a>
+      <a href="/admin/">Admin</a>
+    </nav>
+  </header>
+
+  <main class="hero">
+    <section class="hero-content">
+      <h1>Track satellites beautifully</h1>
+      <p class="subtitle">Beginner‑friendly tracking with clear explanations and favorites.</p>
+      <form class="search" action="/api/satellites/" method="get">
+        <input type="text" name="search" placeholder="Search by name or NORAD ID" aria-label="Search satellites" />
+        <button type="submit">Search</button>
+      </form>
+      <div class="cta-row">
+        <a class="link" href="/api/satellites/">Browse catalog →</a>
+      </div>
+    </section>
+    <section class="visual">
+      <div class="globe" aria-hidden="true">
+        <div class="earth"></div>
+        <div class="glow"></div>
+      </div>
+    </section>
+  </main>
+
+  <section id="how" class="how">
+    <h2>How it works</h2>
+    <p>
+      We use Two‑Line Element (TLE) data to describe orbits and SGP4 to compute a satellite’s current position.
+      Then we convert those coordinates to latitude and longitude on Earth. It’s accurate enough for learning
+      and exploration, and we’ll clearly explain assumptions along the way.
+    </p>
+  </section>
+
+  <script src="{% static 'satellites/home.js' %}"></script>
+</body>
+ </html>

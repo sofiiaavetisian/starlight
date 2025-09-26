@@ -15,6 +15,9 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     queryset = Favorite.objects.all()
     serializer_class = FavoriteSerializer
 
+def home(request):
+    return render(request, "home.html")
+
 @api_view(["GET"])
 def position_single(request, norad_id: int):
     try:
