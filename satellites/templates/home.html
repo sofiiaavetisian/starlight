@@ -8,14 +8,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'satellites/home.css' %}" />
+  <link rel="stylesheet" href="{% static 'satellites/home.css' %}?v=2" />
 </head>
 <body>
   <div id="stars"></div>
   <header class="site-header">
-    <div class="brand">Starlight</div>
     <nav>
-      <a href="/api/satellites/">Catalog</a>
+      <a href="{% url 'catalog' %}">Catalog</a>
       <a href="#how">How it works</a>
       <a href="/admin/">Admin</a>
     </nav>
@@ -23,14 +22,15 @@
 
   <main class="hero">
     <section class="hero-content">
+      <div class="hero-brand">Starlight</div>
       <h1>Track satellites beautifully</h1>
       <p class="subtitle">Beginner‑friendly tracking with clear explanations and favorites.</p>
-      <form class="search" action="/api/satellites/" method="get">
+      <form class="search" action="{% url 'catalog-search' %}" method="get">
         <input type="text" name="search" placeholder="Search by name or NORAD ID" aria-label="Search satellites" />
         <button type="submit">Search</button>
       </form>
       <div class="cta-row">
-        <a class="link" href="/api/satellites/">Browse catalog →</a>
+        <a class="link" href="{% url 'catalog' %}">Browse catalog →</a>
       </div>
     </section>
     <section class="visual">

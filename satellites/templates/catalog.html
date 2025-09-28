@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Starlight — Catalog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'satellites/home.css' %}?v=2" />
+  <link rel="stylesheet" href="{% static 'satellites/catalog.css' %}?v=1" />
+</head>
+<body>
+  <div id="stars"></div>
+  <header class="site-header">
+    <nav>
+      <a href="{% url 'catalog' %}">Catalog</a>
+      <a href="{% url 'home' %}#how">How it works</a>
+      <a href="/admin/">Admin</a>
+    </nav>
+  </header>
+
+  <main class="catalog">
+    <section class="catalog-hero">
+      <div class="hero-brand">Starlight</div>
+      <h1>Satellite catalog</h1>
+      <p class="subtitle">Select a NORAD ID to explore its current orbit details.</p>
+    </section>
+
+    {% if search_term %}
+      <p class="catalog-search-term">Searching for “{{ search_term }}”</p>
+    {% endif %}
+
+    {% if messages %}
+      <div class="flash-stack">
+        {% for message in messages %}
+          <div class="flash-message flash-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if satellites %}
+      <ul class="catalog-grid">
+        {% for sat in satellites %}
+          <li>
+            <a class="catalog-card" href="{% url 'satellite-detail' sat.norad_id %}">
+              <span class="catalog-card__name">{{ sat.name|default:sat.label }}</span>
+              <span class="catalog-card__id">NORAD {{ sat.norad_id }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="catalog-empty">
+        <p>No satellites loaded yet. Run the import task to populate the catalog.</p>
+      </div>
+    {% endif %}
+  </main>
+</body>
+</html>

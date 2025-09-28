@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ satellite.label }} — Starlight</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'satellites/home.css' %}?v=2" />
+  <link rel="stylesheet" href="{% static 'satellites/catalog.css' %}?v=1" />
+</head>
+<body>
+  <div id="stars"></div>
+  <header class="site-header">
+    <nav>
+      <a href="{% url 'catalog' %}">Catalog</a>
+      <a href="{% url 'home' %}#how">How it works</a>
+      <a href="/admin/">Admin</a>
+    </nav>
+  </header>
+
+  <main class="satellite-detail">
+    <a class="back-link" href="{% url 'catalog' %}">← Back to catalog</a>
+    <div class="detail-header">
+      <div class="hero-brand">{{ satellite.label }}</div>
+      <p class="subtitle">Live orbital parameters refreshed from the current TLE.</p>
+    </div>
+
+    {% if error %}
+      <div class="detail-error">{{ error }}</div>
+    {% endif %}
+
+    {% if stats %}
+      <table class="stats-table">
+        <tbody>
+          <tr>
+            <th scope="row">NORAD ID</th>
+            <td>{{ satellite.norad_id }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Name</th>
+            <td>{{ satellite.name|default:"—" }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Latitude</th>
+            <td>{{ stats.lat|floatformat:2 }}°</td>
+          </tr>
+          <tr>
+            <th scope="row">Longitude</th>
+            <td>{{ stats.lon|floatformat:2 }}°</td>
+          </tr>
+          <tr>
+            <th scope="row">Altitude</th>
+            <td>{{ stats.alt_km|floatformat:1 }} km</td>
+          </tr>
+          <tr>
+            <th scope="row">Velocity</th>
+            <td>{{ stats.vel_kms|floatformat:3 }} km/s</td>
+          </tr>
+          <tr>
+            <th scope="row">Timestamp (UTC)</th>
+            <td>
+              {% if stats.timestamp_obj %}
+                {{ stats.timestamp_obj|date:"Y-m-d H:i:s" }} UTC
+              {% else %}
+                {{ stats.timestamp }}
+              {% endif %}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    {% else %}
+      <div class="catalog-empty">
+        <p>We couldn't compute the satellite position right now.</p>
+      </div>
+    {% endif %}
+  </main>
+</body>
+</html>
