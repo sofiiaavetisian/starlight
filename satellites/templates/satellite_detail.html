@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'satellites/home.css' %}?v=2" />
   <link rel="stylesheet" href="{% static 'satellites/catalog.css' %}?v=1" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2LXp0Rqlw+tH6V0tF6QCnnuGkF45x0I1yXk0p3s=" crossorigin="" />
 </head>
 <body>
   <div id="stars"></div>
@@ -28,54 +29,65 @@
       <p class="subtitle">Live orbital parameters refreshed from the current TLE.</p>
     </div>
 
-    {% if error %}
-      <div class="detail-error">{{ error }}</div>
-    {% endif %}
+    <div class="detail-layout">
+      <div class="detail-panel">
+        {% if error %}
+          <div class="detail-error">{{ error }}</div>
+        {% endif %}
 
-    {% if stats %}
-      <table class="stats-table">
-        <tbody>
-          <tr>
-            <th scope="row">NORAD ID</th>
-            <td>{{ satellite.norad_id }}</td>
-          </tr>
-          <tr>
-            <th scope="row">Name</th>
-            <td>{{ satellite.name|default:"—" }}</td>
-          </tr>
-          <tr>
-            <th scope="row">Latitude</th>
-            <td>{{ stats.lat|floatformat:2 }}°</td>
-          </tr>
-          <tr>
-            <th scope="row">Longitude</th>
-            <td>{{ stats.lon|floatformat:2 }}°</td>
-          </tr>
-          <tr>
-            <th scope="row">Altitude</th>
-            <td>{{ stats.alt_km|floatformat:1 }} km</td>
-          </tr>
-          <tr>
-            <th scope="row">Velocity</th>
-            <td>{{ stats.vel_kms|floatformat:3 }} km/s</td>
-          </tr>
-          <tr>
-            <th scope="row">Timestamp (UTC)</th>
-            <td>
-              {% if stats.timestamp_obj %}
-                {{ stats.timestamp_obj|date:"Y-m-d H:i:s" }} UTC
-              {% else %}
-                {{ stats.timestamp }}
-              {% endif %}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    {% else %}
-      <div class="catalog-empty">
-        <p>We couldn't compute the satellite position right now.</p>
+        {% if stats %}
+          <table class="stats-table">
+            <tbody>
+              <tr>
+                <th scope="row">NORAD ID</th>
+                <td>{{ satellite.norad_id }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Name</th>
+                <td>{{ satellite.name|default:"—" }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Latitude</th>
+                <td>{{ stats.lat|floatformat:2 }}°</td>
+              </tr>
+              <tr>
+                <th scope="row">Longitude</th>
+                <td>{{ stats.lon|floatformat:2 }}°</td>
+              </tr>
+              <tr>
+                <th scope="row">Altitude</th>
+                <td>{{ stats.alt_km|floatformat:1 }} km</td>
+              </tr>
+              <tr>
+                <th scope="row">Velocity</th>
+                <td>{{ stats.vel_kms|floatformat:3 }} km/s</td>
+              </tr>
+              <tr>
+                <th scope="row">Timestamp (UTC)</th>
+                <td>
+                  {% if stats.timestamp_obj %}
+                    {{ stats.timestamp_obj|date:"Y-m-d H:i:s" }} UTC
+                  {% else %}
+                    {{ stats.timestamp }}
+                  {% endif %}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        {% else %}
+          <div class="catalog-empty">
+            <p>We couldn't compute the satellite position right now.</p>
+          </div>
+        {% endif %}
       </div>
-    {% endif %}
+
+      <div class="map-panel">
+        <div id="satellite-map" class="satellite-map" data-lat="{{ stats.lat }}" data-lon="{{ stats.lon }}" data-label="{{ satellite.label }}" aria-label="Satellite position map"></div>
+      </div>
+    </div>
   </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-p2nde5Sx6XZfxnM8Hxe+xTQSZo1U6f3GE3OoAJRDigg=" crossorigin=""></script>
+  <script src="{% static 'satellites/satellite_detail.js' %}" defer></script>
 </body>
 </html>
