@@ -121,6 +121,32 @@
   padding:130px 6vw 80px;
 }
 
+.detail-layout{
+  display:grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap:24px;
+}
+
+.detail-panel,
+.map-panel{
+  background:rgba(17,24,39,0.82);
+  border-radius:18px;
+  border:1px solid var(--panel-border);
+  box-shadow:0 25px 70px rgba(8,12,22,0.45);
+  padding:24px;
+}
+
+.map-panel{
+  padding:0;
+}
+
+.satellite-map{
+  width:100%;
+  min-height:320px;
+  border-radius:18px;
+  overflow:hidden;
+}
+
 .satellite-detail .hero-brand{
   font-size:clamp(30px, 5vw, 60px);
   margin-bottom:6px;
@@ -158,10 +184,9 @@
   border-collapse:separate;
   border-spacing:0;
   overflow:hidden;
-  background:rgba(17,24,39,0.82);
-  border-radius:18px;
-  border:1px solid var(--panel-border);
-  box-shadow:0 30px 80px rgba(8,12,22,0.45);
+  background:rgba(10,14,23,0.88);
+  border-radius:14px;
+  border:1px solid rgba(96,165,250,0.25);
 }
 
 .stats-table th,
@@ -194,6 +219,10 @@
 
   .satellite-detail{
     padding-top:110px;
+  }
+
+  .detail-layout{
+    grid-template-columns:1fr;
   }
 
   .catalog-card{

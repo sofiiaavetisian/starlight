@@ -37,4 +37,19 @@
   window.StarlightMap = {
     renderSatelliteMap,
   };
+
+  document.addEventListener("DOMContentLoaded", function(){
+    const container = document.getElementById("satellite-map");
+    if(!container){
+      return;
+    }
+
+    const lat = parseFloat(container.dataset.lat);
+    const lon = parseFloat(container.dataset.lon);
+    const label = container.dataset.label;
+
+    if(Number.isFinite(lat) && Number.isFinite(lon)){
+      renderSatelliteMap(container, { lat, lon, label });
+    }
+  });
 })();
