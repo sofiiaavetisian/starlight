@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'satellites/home.css' %}?v=2" />
   <link rel="stylesheet" href="{% static 'satellites/catalog.css' %}?v=1" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2LXp0Rqlw+tH6V0tF6QCnnuGkF45x0I1yXk0p3s=" crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 </head>
 <body>
   <div id="stars"></div>
@@ -81,13 +81,15 @@
         {% endif %}
       </div>
 
-      <div class="map-panel">
-        <div id="satellite-map" class="satellite-map" data-lat="{{ stats.lat }}" data-lon="{{ stats.lon }}" data-label="{{ satellite.label }}" aria-label="Satellite position map"></div>
-      </div>
+      {% if stats %}
+        <div class="map-panel">
+          <div id="satellite-map" class="satellite-map" data-lat="{{ stats.lat }}" data-lon="{{ stats.lon }}" data-label="{{ satellite.label }}" aria-label="Satellite position map"></div>
+        </div>
+      {% endif %}
     </div>
   </main>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-p2nde5Sx6XZfxnM8Hxe+xTQSZo1U6f3GE3OoAJRDigg=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="{% static 'satellites/satellite_detail.js' %}" defer></script>
 </body>
 </html>
