@@ -56,37 +56,5 @@
     if(!map){
       return;
     }
-
-    container._leafletMap = map;
-
-    const panel = container.closest("[data-map-panel]");
-    if(!panel){
-      return;
-    }
-
-    const expandBtn = panel.querySelector("[data-map-expand]");
-    const closeBtn = panel.querySelector("[data-map-close]");
-
-    function toggleExpanded(expanded){
-      panel.classList.toggle("is-expanded", expanded);
-      document.body.classList.toggle("map-expanded", expanded);
-      setTimeout(function(){
-        map.invalidateSize();
-      }, 200);
-    }
-
-    expandBtn?.addEventListener("click", function(){
-      toggleExpanded(true);
-    });
-
-    closeBtn?.addEventListener("click", function(){
-      toggleExpanded(false);
-    });
-
-    panel.addEventListener("keydown", function(event){
-      if(event.key === "Escape" && panel.classList.contains("is-expanded")){
-        toggleExpanded(false);
-      }
-    });
   });
 })();

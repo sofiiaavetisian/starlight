@@ -122,8 +122,8 @@
 }
 
 .detail-layout{
-  display:grid;
-  grid-template-columns:minmax(0, 1fr);
+  display:flex;
+  flex-direction:column;
   gap:28px;
 }
 
@@ -134,84 +134,16 @@
   border:1px solid var(--panel-border);
   box-shadow:0 25px 70px rgba(8,12,22,0.45);
   padding:24px;
-}
-
-.map-panel{
-  display:flex;
-  flex-direction:column;
-  gap:16px;
-  position:relative;
-}
-
-.map-panel__controls{
-  display:flex;
-  justify-content:flex-end;
-  gap:10px;
-}
-
-.map-toggle{
-  border:none;
-  border-radius:999px;
-  background:linear-gradient(90deg, #22d3ee, #60a5fa);
-  color:#06111a;
-  font-weight:600;
-  padding:8px 16px;
-  cursor:pointer;
-  transition:opacity .18s ease;
-}
-
-.map-toggle:hover{
-  opacity:0.85;
-}
-
-.map-toggle--close{
-  display:none;
-  background:rgba(15,23,42,0.92);
-  color:var(--text);
-  border:1px solid rgba(96,165,250,0.45);
+  width:100%;
+  box-sizing:border-box;
 }
 
 .satellite-map{
   width:100%;
-  min-height:320px;
+  min-height:0;
+  height:360px;
   border-radius:12px;
   overflow:hidden;
-}
-
-.map-panel.is-expanded{
-  position:fixed;
-  inset:40px;
-  z-index:905;
-  max-width:none;
-  padding:24px;
-  border-radius:24px;
-  box-shadow:0 60px 160px rgba(5,8,15,0.65);
-}
-
-.map-panel.is-expanded .satellite-map{
-  min-height:100%;
-  flex:1;
-}
-
-.map-panel.is-expanded .map-toggle--close{
-  display:inline-flex;
-}
-
-.map-panel.is-expanded [data-map-expand]{
-  display:none;
-}
-
-body.map-expanded{
-  overflow:hidden;
-}
-
-body.map-expanded::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:rgba(5,8,15,0.78);
-  backdrop-filter:blur(4px);
-  z-index:900;
 }
 
 .satellite-detail .hero-brand{
@@ -288,10 +220,6 @@ body.map-expanded::before{
     padding-top:110px;
   }
 
-  .detail-layout{
-    grid-template-columns:1fr;
-  }
-
   .map-panel.is-expanded{
     inset:16px;
   }
@@ -303,12 +231,5 @@ body.map-expanded::before{
   .stats-table th,
   .stats-table td{
     padding:16px 18px;
-  }
-}
-
-@media (min-width: 900px){
-  .detail-layout{
-    grid-template-columns:minmax(0, 1.1fr) minmax(0, 0.9fr);
-    align-items:start;
   }
 }

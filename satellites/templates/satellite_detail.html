@@ -31,11 +31,7 @@
 
     <div class="detail-layout">
       {% if stats %}
-        <div class="map-panel" data-map-panel>
-          <div class="map-panel__controls">
-            <button type="button" class="map-toggle" data-map-expand>Expand map</button>
-            <button type="button" class="map-toggle map-toggle--close" data-map-close>Close</button>
-          </div>
+        <div class="map-panel">
           <div id="satellite-map" class="satellite-map" data-lat="{{ stats.lat }}" data-lon="{{ stats.lon }}" data-label="{{ satellite.label }}" aria-label="Satellite position map"></div>
         </div>
       {% endif %}
