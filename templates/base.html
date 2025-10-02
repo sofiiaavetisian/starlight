@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Starlight{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'satellites/home.css' %}?v=2" />
+  <link rel="stylesheet" href="{% static 'satellites/catalog.css' %}?v=1" />
+  <link rel="stylesheet" href="{% static 'satellites/auth.css' %}?v=1" />
+</head>
+<body class="auth-layout">
+  <div class="auth-shell">
+    <a class="auth-home" href="{% url 'home' %}">← Back to Starlight</a>
+    {% if messages %}
+      <div class="flash-stack">
+        {% for message in messages %}
+          <div class="flash-message flash-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>
