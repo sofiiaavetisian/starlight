@@ -24,5 +24,6 @@ urlpatterns = [
     path('catalog/', catalog, name='catalog'),
     path('catalog/search/', catalog_search, name='catalog-search'),
     path('catalog/<int:norad_id>/', satellite_detail, name='satellite-detail'),
+    path('accounts/', include('django.contrib.auth.urls')),
     path('api/', include('satellites.urls')), 
 ]

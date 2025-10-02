@@ -18,6 +18,11 @@
       <a href="{% url 'catalog' %}">Catalog</a>
       <a href="{% url 'home' %}#how">How it works</a>
       <a href="/admin/">Admin</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}">Logout</a>
+      {% else %}
+        <a href="{% url 'login' %}">Login</a>
+      {% endif %}
     </nav>
   </header>
 
