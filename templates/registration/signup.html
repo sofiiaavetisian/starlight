@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Create Account — Starlight{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <h1>Create account</h1>
+  <p class="meta">Join Starlight to save favorites and sync your catalog.</p>
+  <form method="post" class="auth-form">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div>
+      <label for="id_username">Username</label>
+      {{ form.username }}
+      {{ form.username.errors }}
+    </div>
+    <div>
+      <label for="id_password1">Password</label>
+      {{ form.password1 }}
+      {{ form.password1.errors }}
+    </div>
+    <div>
+      <label for="id_password2">Confirm password</label>
+      {{ form.password2 }}
+      {{ form.password2.errors }}
+    </div>
+    <button type="submit" class="auth-submit">Sign up</button>
+  </form>
+  <div class="auth-footer">
+    <span>Already registered?</span>
+    <a href="{% url 'login' %}">Sign in</a>
+  </div>
+</div>
+{% endblock %}

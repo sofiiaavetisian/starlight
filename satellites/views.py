@@ -13,6 +13,9 @@ from rest_framework import status
 from rest_framework import viewsets
 from .models import Favorite
 from .serializers import FavoriteSerializer
+from django.contrib.auth.forms import UserCreationForm
+from django.views.generic import CreateView
+from django.urls import reverse_lazy
 
 
 def _catalog_label(tle: TLE) -> str:
@@ -22,6 +25,11 @@ def _catalog_label(tle: TLE) -> str:
 class FavoriteViewSet(viewsets.ModelViewSet):
     queryset = Favorite.objects.all()
     serializer_class = FavoriteSerializer
+
+class SignUpView(CreateView):
+    form_class = UserCreationForm
+    template_name = "registration/signup.html"
+    success_url = reverse_lazy("login")
 
 def home(request):
     return render(request, "home.html")
