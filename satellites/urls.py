@@ -1,7 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    FavoriteViewSet, position_single, positions_batch, import_tle_catalog,
+    FavoriteViewSet,
+    import_tle_catalog,
+    position_single,
+    positions_batch,
     SatelliteListView,
 )
 
