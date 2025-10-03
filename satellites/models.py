@@ -12,13 +12,7 @@ class TLE(models.Model):
         return f"{self.norad_id} {self.name}".strip()
 
 class Favorite(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="favorites",
-        null=True,
-        blank=True,
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="favorites")
     norad_id = models.PositiveIntegerField()
     name = models.CharField(max_length=128)
     notes = models.TextField(blank=True)

@@ -16,7 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from satellites.views import catalog, catalog_search, home, satellite_detail, SignUpView
+from satellites.views import (
+    catalog,
+    catalog_search,
+    favorite_add,
+    favorite_remove,
+    favorites_list,
+    home,
+    satellite_detail,
+    SignUpView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,6 +33,9 @@ urlpatterns = [
     path('catalog/', catalog, name='catalog'),
     path('catalog/search/', catalog_search, name='catalog-search'),
     path('catalog/<int:norad_id>/', satellite_detail, name='satellite-detail'),
+    path('favorites/', favorites_list, name='favorites'),
+    path('favorites/add/<int:norad_id>/', favorite_add, name='favorite-add'),
+    path('favorites/remove/<int:norad_id>/', favorite_remove, name='favorite-remove'),
     path('accounts/signup/', SignUpView.as_view(), name='signup'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('api/', include('satellites.urls')), 

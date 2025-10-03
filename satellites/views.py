@@ -1,21 +1,19 @@
 from datetime import datetime
+
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
-from rest_framework import generics, filters
-from .models import TLE
-from .serializers import TLESerializer
-from .services.tle_fetcher import get_or_refresh_tle, TLENotFound
-from .services.propagation import propagate_now
+from django.urls import reverse, reverse_lazy
+from django.views.generic import CreateView
+from rest_framework import filters, generics, status, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import viewsets
-from .models import Favorite
-from .serializers import FavoriteSerializer
-from django.contrib.auth.forms import UserCreationForm
-from django.views.generic import CreateView
-from django.urls import reverse_lazy
+
+from .models import Favorite, TLE
+from .serializers import FavoriteSerializer, TLESerializer
+from .services.propagation import propagate_now
+from .services.tle_fetcher import TLENotFound, get_or_refresh_tle
 
 
 def _catalog_label(tle: TLE) -> str:
@@ -23,13 +21,66 @@ def _catalog_label(tle: TLE) -> str:
     return name or f"NORAD {tle.norad_id}"
 
 class FavoriteViewSet(viewsets.ModelViewSet):
-    queryset = Favorite.objects.all()
     serializer_class = FavoriteSerializer
+
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Favorite.objects.none()
+        return Favorite.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class SignUpView(CreateView):
     form_class = UserCreationForm
     template_name = "registration/signup.html"
     success_url = reverse_lazy("login")
+
+
+@login_required
+def favorites_list(request):
+    favorites = Favorite.objects.filter(user=request.user).order_by("-created_at")
+    return render(request, "favorites/list.html", {"favorites": favorites})
+
+
+@login_required
+def favorite_add(request, norad_id: int):
+    if request.method != "POST":
+        return redirect("satellite-detail", norad_id=norad_id)
+
+    tle = get_object_or_404(TLE, pk=norad_id)
+    label = _catalog_label(tle)
+    favorite, created = Favorite.objects.get_or_create(
+        user=request.user,
+        norad_id=tle.norad_id,
+        defaults={"name": label},
+    )
+
+    if created:
+        messages.success(request, f"Added {label} to your favorites.")
+    else:
+        favorite.name = label
+        favorite.save(update_fields=["name"])
+        messages.info(request, f"{label} is already in your favorites.")
+
+    next_url = request.POST.get("next") or reverse("satellite-detail", args=[norad_id])
+    return redirect(next_url)
+
+
+@login_required
+def favorite_remove(request, norad_id: int):
+    if request.method != "POST":
+        return redirect("satellite-detail", norad_id=norad_id)
+
+    deleted, _ = Favorite.objects.filter(user=request.user, norad_id=norad_id).delete()
+
+    if deleted:
+        messages.info(request, "Removed from favorites.")
+    else:
+        messages.warning(request, "That satellite was not in your favorites.")
+
+    next_url = request.POST.get("next") or reverse("satellite-detail", args=[norad_id])
+    return redirect(next_url)
 
 def home(request):
     return render(request, "home.html")
@@ -125,8 +176,11 @@ def position_single(request, norad_id: int):
 
 @api_view(["GET"])
 def positions_batch(request):
+    if not request.user.is_authenticated:
+        return Response([])
+
     out = []
-    for fav in Favorite.objects.all():
+    for fav in Favorite.objects.filter(user=request.user):
         try:
             name, l1, l2 = get_or_refresh_tle(fav.norad_id, max_age_hours=48)
             pos = propagate_now(l1, l2)
