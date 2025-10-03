@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="{% static 'satellites/auth.css' %}?v=1" />
 </head>
 <body class="auth-layout">
-  <div class="auth-shell">
+  <div class="auth-shell{% block shell_extra_class %}{% endblock %}">
     <a class="auth-home" href="{% url 'home' %}">← Back to Starlight</a>
     {% if messages %}
       <div class="flash-stack">

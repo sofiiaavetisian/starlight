@@ -18,6 +18,10 @@
   border:1px solid rgba(96,165,250,0.25);
 }
 
+.auth-shell.favorites-shell{
+  width:min(720px, 92vw);
+}
+
 .auth-home{
   display:inline-flex;
   align-items:center;
@@ -50,7 +54,7 @@
 }
 
 .favorites-card{
-  width:min(600px, 92vw);
+  width:100%;
 }
 
 .favorites-card ul{
@@ -70,6 +74,7 @@
   border-radius:14px;
   background:rgba(17,24,39,0.9);
   border:1px solid rgba(96,165,250,0.2);
+  gap:16px;
 }
 
 .favorites-card strong{font-weight:700}
@@ -182,4 +187,23 @@
   background:rgba(34,197,94,0.12);
   border-color:rgba(34,197,94,0.35);
   color:#bbf7d0;
+}
+.favorites-card li{
+  flex-wrap:wrap;
+}
+
+.favorites-card li > div:first-child{
+  flex:1 1 240px;
+}
+
+.favorites-actions{
+  flex:0 0 auto;
+}
+
+.favorites-actions form{
+  display:inline;
+}
+
+.favorites-remove{
+  padding:8px 16px;
 }
