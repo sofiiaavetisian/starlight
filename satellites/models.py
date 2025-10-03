@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 class TLE(models.Model):
     norad_id = models.PositiveIntegerField(primary_key=True)
@@ -11,6 +12,13 @@ class TLE(models.Model):
         return f"{self.norad_id} {self.name}".strip()
 
 class Favorite(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="favorites",
+        null=True,
+        blank=True,
+    )
     norad_id = models.PositiveIntegerField()
     name = models.CharField(max_length=128)
     notes = models.TextField(blank=True)
@@ -18,7 +26,7 @@ class Favorite(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        unique_together = ("user", "norad_id")
 
     def __str__(self):
         return f"{self.name} ({self.norad_id})"
-
