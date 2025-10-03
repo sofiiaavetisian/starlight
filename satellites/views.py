@@ -153,6 +153,10 @@ def satellite_detail(request, norad_id: int):
             stats["timestamp_obj"] = None
 
 
+    is_favorite = False
+    if request.user.is_authenticated:
+        is_favorite = Favorite.objects.filter(user=request.user, norad_id=norad_id).exists()
+
     context = {
         "satellite": {
             "norad_id": norad_id,
@@ -161,6 +165,7 @@ def satellite_detail(request, norad_id: int):
         },
         "stats": stats,
         "error": error_message,
+        "is_favorite": is_favorite,
     }
     return render(request, "satellite_detail.html", context)
 

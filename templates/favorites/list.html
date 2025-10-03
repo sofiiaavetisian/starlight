@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}My Favorites — Starlight{% endblock %}
+{% block content %}
+<div class="auth-card favorites-card">
+  <h1>Your favorite satellites</h1>
+  {% if favorites %}
+    <ul class="favorites-list">
+      {% for fav in favorites %}
+        <li>
+          <div>
+            <strong>{{ fav.name }}</strong>
+            <span class="favorites-meta">NORAD {{ fav.norad_id }}</span>
+          </div>
+          <div class="favorites-actions">
+            <a class="link" href="{% url 'satellite-detail' fav.norad_id %}">View details →</a>
+            <form action="{% url 'favorite-remove' fav.norad_id %}" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{% url 'favorites' %}">
+              <button type="submit" class="favorites-remove">Remove</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="favorites-empty">You haven’t added any satellites yet. Browse the catalog and add your first favorite!</p>
+  {% endif %}
+</div>
+{% endblock %}

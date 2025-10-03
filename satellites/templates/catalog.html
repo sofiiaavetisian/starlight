@@ -17,6 +17,9 @@
     <nav>
       <a href="{% url 'catalog' %}">Catalog</a>
       <a href="{% url 'home' %}#how">How it works</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'favorites' %}">Favorites</a>
+      {% endif %}
       <a href="/admin/">Admin</a>
       {% if user.is_authenticated %}
         <form action="{% url 'logout' %}" method="post" class="logout-form">
@@ -34,6 +37,9 @@
       <div class="hero-brand">Starlight</div>
       <h1>Satellite catalog</h1>
       <p class="subtitle">Select a NORAD ID to explore its current orbit details.</p>
+      {% if user.is_authenticated %}
+        <a class="link" href="{% url 'favorites' %}">View your favorites →</a>
+      {% endif %}
     </section>
 
     {% if search_term %}
