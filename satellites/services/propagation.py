@@ -45,8 +45,8 @@ def _gmst_from_jd(jd_ut1: float) -> float:
 
 # for this function, i simplified teh sgp4 algorithm available online to meet my basic needs
 # we need this function to propagate the satellite position to the current time based on its time and orbit epoch
-def propagate_now(line1: str, line2: str, *, at: datetime | None = None):
-    now = at.astimezone(timezone.utc) if at else datetime.now(timezone.utc)
+def propagate_now(line1: str, line2: str):
+    now = datetime.now(timezone.utc)
     sat = Satrec.twoline2rv(line1, line2)
     jd, fr = jday(now.year, now.month, now.day, now.hour, now.minute, now.second + now.microsecond/1e6)
     e, r, v = sat.sgp4(jd, fr) 
