@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.log
+.git
+.gitignore
+.venv/
+env/
+.dockerignore
+.env
+HTML/
+node_modules/
+

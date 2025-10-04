@@ -1,1 +1,9 @@
 to-dolist.txt
+__pycache__/
+*.py[cod]
+*.log
+.venv/
+env/
+.env
+db.sqlite3
+staticfiles/
