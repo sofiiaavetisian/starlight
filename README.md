@@ -38,11 +38,11 @@ Follow these steps to build and run the app inside a Docker container. The only 
 - Static files missing when `DEBUG=0`: They are collected during the Docker build. Rebuild the image (`docker build ...`) if you made changes to static assets.
 - Rebuilding after code changes: Run `docker build -t starlight-app .` again, then restart the container.
 
-## How It Works (Plain English)
+## How It Works
 
 Here’s the chain of events when you ask the app, “where is satellite X right now?”
 
-1. **Grab the TLE** – A Two-Line Element set is basically two lines of numbers that describe the orbit. For example, a NORAD ID might have a line that starts `1 25544…`. That single line hides stuff like inclination (tilt of the orbit), mean motion (how many laps per day), and when the orbit was last updated. I fetch the latest TLE from CelesTrak so I’m not stuck with stale data.
+1. **Grab the TLE** – A Two-Line Element set is basically two lines of numbers that describe the orbit. For example, a NORAD ID might have a line that starts `1 25544…`. That single line hides things like inclination (tilt of the orbit), mean motion (how many laps per day), and when the orbit was last updated. I fetch the latest TLE from CelesTrak so I’m not stuck with stale data.
 
 2. **Feed it into SGP4** – SGP4 is the standard orbit propagator used by NASA, universities, basically everyone. I hand it the two TLE lines and a timestamp (the current UTC time). SGP4 spits out two 3D vectors in the TEME frame:
    - `r = (x, y, z)` is the satellite position in kilometres.
