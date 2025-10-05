@@ -54,9 +54,34 @@
   <section id="how" class="how">
     <h2>How it works</h2>
     <p>
-      We use Two‑Line Element (TLE) data to describe orbits and SGP4 to compute a satellite’s current position.
-      Then we convert those coordinates to latitude and longitude on Earth. It’s accurate enough for learning
-      and exploration, and we’ll clearly explain assumptions along the way.
+      I wanted the app to explain the “space math” without sounding like a textbook, so here’s the short version.
+    </p>
+    <p>
+      <strong>1. Grab the orbit description.</strong> Every satellite has two lines of numbers called a TLE.
+      They hide things like the orbit tilt, how squished the path is, and when the data was last updated. The
+      app fetches the freshest TLE from CelesTrak just before doing any calculations.
+    </p>
+    <p>
+      <strong>2. Ask SGP4 where it is now.</strong> SGP4 is the standard library that takes those two lines and a
+      timestamp (I use the current UTC time) and returns a position vector <code>(x, y, z)</code> plus a velocity
+      vector <code>(vx, vy, vz)</code> in the satellite’s own coordinate frame, called TEME. Think of TEME as
+      “orbit space” – super accurate for physics, but not easy to plot on a map yet.
+    </p>
+    <p>
+      <strong>3. Rotate the vector so it matches Earth.</strong> Because Earth spins, we need to rotate that TEME
+      vector by the current Greenwich Mean Sidereal Time (basically “how far the planet has spun today”). After the
+      rotation we have an ECEF vector that lines up with Earth’s axes instead of the orbit’s axes.
+    </p>
+    <p>
+      <strong>4. Swap to latitude and longitude.</strong> I feed the rotated vector into a converter that outputs
+      human-friendly numbers: latitude, longitude, and altitude. Example: if SGP4 says the ISS is at about
+      <code>(6524, -686, 0)</code> km in TEME, the maths turns that into roughly <code>53° N, 32° E, 420 km up</code>,
+      which is exactly the kind of info you’d want on a map.
+    </p>
+    <p>
+      <strong>5. Ship the result back to you.</strong> The API wraps the current position, speed, and timestamp into
+      JSON so the UI (or any other client) can show the dot moving across Earth in real time. No secret sauce—just
+      tried-and-tested formulas with friendlier explanations.
     </p>
   </section>
 

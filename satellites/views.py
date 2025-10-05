@@ -1,5 +1,7 @@
 from datetime import datetime
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from rest_framework import generics, filters
@@ -38,6 +40,37 @@ class SignUpView(CreateView):
 def home(request):
     """Home page view"""
     return render(request, "home.html")
+
+
+@login_required
+def favorites_list(request):
+    """List all satellites the current user has marked as a favorite."""
+    favorites = request.user.favorites.all()
+    return render(request, "favorites/list.html", {"favorites": favorites})
+
+
+@login_required
+@require_POST
+def favorite_add(request, norad_id: int):
+    """Add a satellite to the current user's favorites, ignoring duplicates."""
+    tle = get_object_or_404(TLE, pk=norad_id)
+    label = (tle.name or "").strip() or f"NORAD {tle.norad_id}"
+    Favorite.objects.get_or_create(
+        user=request.user,
+        norad_id=norad_id,
+        defaults={"name": label},
+    )
+    next_url = request.POST.get("next") or reverse("satellite-detail", args=[norad_id])
+    return redirect(next_url)
+
+
+@login_required
+@require_POST
+def favorite_remove(request, norad_id: int):
+    """Remove a satellite from the current user's favorites if it exists."""
+    Favorite.objects.filter(user=request.user, norad_id=norad_id).delete()
+    next_url = request.POST.get("next") or reverse("favorites")
+    return redirect(next_url)
 
 
 def catalog(request):
@@ -130,6 +163,10 @@ def satellite_detail(request, norad_id: int):
             stats["timestamp_obj"] = None
 
     # render the detail template with the satellite info, stats, and any error message
+    is_favorite = False
+    if request.user.is_authenticated:
+        is_favorite = Favorite.objects.filter(user=request.user, norad_id=norad_id).exists()
+
     context = {
         "satellite": {
             "norad_id": norad_id,
@@ -138,6 +175,7 @@ def satellite_detail(request, norad_id: int):
         },
         "stats": stats,
         "error": error_message,
+        "is_favorite": is_favorite,
     }
     return render(request, "satellite_detail.html", context)
 

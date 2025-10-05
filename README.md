@@ -38,6 +38,25 @@ Follow these steps to build and run the app inside a Docker container. The only 
 - Static files missing when `DEBUG=0`: They are collected during the Docker build. Rebuild the image (`docker build ...`) if you made changes to static assets.
 - Rebuilding after code changes: Run `docker build -t starlight-app .` again, then restart the container.
 
+## How It Works (Plain English)
+
+Here’s the chain of events when you ask the app, “where is satellite X right now?”
+
+1. **Grab the TLE** – A Two-Line Element set is basically two lines of numbers that describe the orbit. For example, a NORAD ID might have a line that starts `1 25544…`. That single line hides stuff like inclination (tilt of the orbit), mean motion (how many laps per day), and when the orbit was last updated. I fetch the latest TLE from CelesTrak so I’m not stuck with stale data.
+
+2. **Feed it into SGP4** – SGP4 is the standard orbit propagator used by NASA, universities, basically everyone. I hand it the two TLE lines and a timestamp (the current UTC time). SGP4 spits out two 3D vectors in the TEME frame:
+   - `r = (x, y, z)` is the satellite position in kilometres.
+   - `v = (vx, vy, vz)` is the velocity in km/s.
+   TEME is “True Equator Mean Equinox” – think of it as coordinates that move with the orbit, not with Earth. They’re not great for drawing on a map yet, but they’re super precise for orbit math.
+
+3. **Rotate into Earth’s frame** – Because Earth spins underneath the orbit, I need to rotate the TEME vector so it lines up with Earth. I do that with the `_gmst_from_jd` helper. It calculates the Greenwich Mean Sidereal Time (GMST), which is just “how many degrees has the Earth spun since a known reference point.” If GMST is, say, 45°, I rotate the vector by 45° around Earth’s Z axis. After that rotation I have an ECEF vector (Earth-Centered, Earth-Fixed). Example: imagine SGP4 gave me `(6524, -686, 0)` km and GMST works out to 1 radian (~57°). After rotation the new vector might be `(5583, 3603, 0)` km. Now the X axis points toward Greenwich and the Y axis toward 90°E, so it’s tied to the ground.
+
+4. **Convert to latitude/longitude/altitude** – I plug the ECEF vector into `pyproj` which knows how to jump from Cartesian coordinates to geodetic ones (`lat`, `lon`, `alt`). In the example above, the rotated vector might land at latitude `53.1°`, longitude `32.5°`, altitude `420 km`. That makes sense for the ISS: roughly 400–420 km up, usually somewhere between ±51.6° latitude.
+
+5. **Send it back as JSON** – The API bundles the NORAD ID, name, latitude, longitude, altitude, speed (calculated from the velocity vector), and the timestamp. The frontend or any external tool can then plot that point on a map or draw a track.
+
+Key takeaway: I’m not doing any fancy orbital mechanics myself. I’m leaning on the established SGP4 library to do the heavy lifting, then doing a couple of coordinate transforms so humans can read the result.
+
 ## Project Commands (without Docker)
 
 If you want to run the project directly on your machine, you will need Python 3.11.
