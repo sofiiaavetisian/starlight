@@ -37,6 +37,10 @@ def upsert_tles(records: List[Dict]) -> int:
     return count
 
 def fetch_tle_from_celestrak(norad_id: int) -> Tuple[str, str, str]:
+    """Little helper that grabs the latest TLE from CelesTrak so I don't have to copy-paste it.
+
+    I hit their REST endpoint, double-check the response actually looks like a TLE, and
+    hand back the name plus the two lines in a tuple."""
     url = CELESTRAK_TLE_BY_CATNR.format(norad_id=norad_id)
     with httpx.Client(timeout=15.0, follow_redirects=True) as client:
         r = client.get(url)

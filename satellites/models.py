@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 
+#Each model class represents a table in the database.
+
 class TLE(models.Model):
     norad_id = models.PositiveIntegerField(primary_key=True)
     name = models.CharField(max_length=128, blank=True)
