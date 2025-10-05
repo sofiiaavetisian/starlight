@@ -26,6 +26,10 @@ Follow these steps to build and run the app inside a Docker container. The only 
      ```bash
      docker run --env-file .env starlight-app python manage.py migrate
      ```
+   - Populate the satellite catalog (only needed the first time) with:
+     ```bash
+     docker run --env-file .env starlight-app python manage.py import_catalog
+     ```
 5. **Open the site** in your browser at [http://localhost:8000](http://localhost:8000).
 
 ## Troubleshooting
@@ -33,10 +37,6 @@ Follow these steps to build and run the app inside a Docker container. The only 
 - 400 Bad Request: Make sure you are visiting `http://localhost:8000` (not `0.0.0.0`).
 - Static files missing when `DEBUG=0`: They are collected during the Docker build. Rebuild the image (`docker build ...`) if you made changes to static assets.
 - Rebuilding after code changes: Run `docker build -t starlight-app .` again, then restart the container.
-
-## Static Files Issue (Report Note)
-
-When I first tested the Docker container with `DEBUG=0`, none of the CSS or JavaScript showed up and Django kept returning 400 errors. It turned out that Django refuses requests that use the host `0.0.0.0` when debug mode is off, and it also stops serving static files automatically. The fix was to tell whoever runs the app to use `http://localhost:8000` instead of `0.0.0.0`, and to add WhiteNoise so the collected static files are served even with debug disabled. After rebuilding the image with `collectstatic`, everything loaded normally.
 
 ## Project Commands (without Docker)
 

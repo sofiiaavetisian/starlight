@@ -4,6 +4,11 @@ from satellites.services.tle_fetcher import parse_tle_catalog, upsert_tles
 
 CELESTRAK_ACTIVE = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=TLE"
 
+# Command to import/refresh the satellite catalog from CelesTrak
+# Needed to run this at least once to populate the TLE table
+# run: python manage.py import_catalog
+# to populate the TLE table
+
 class Command(BaseCommand):
     help = "Import/refresh the satellite catalog (TLE table) from CelesTrak 'active' group."
 
