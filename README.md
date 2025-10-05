@@ -2,9 +2,9 @@
 
 ## Run the Project Locally (Docker)
 
-Follow these steps to build and run the app inside a Docker container. The only local dependency you need is Docker (Docker Desktop on macOS/Windows or Docker Engine on Linux).
+Follow these steps to build and run the app inside a Docker container. The only local dependency you need is Docker.
 
-1. **Clone the repository** (or open the project folder if you already have it).
+1. **Clone the repository**
 2. **Create your environment file** by copying the template and editing the values you need:
    ```bash
    cp .env.example .env
@@ -17,20 +17,20 @@ Follow these steps to build and run the app inside a Docker container. The only 
    docker build -t starlight-app .
    ```
    This installs Python dependencies, collects static files, and prepares the app inside an image.
-4. **Run the container** using your environment variables:
+4. **Set up the database** inside the container (run each command from the project root):
+   ```bash
+   docker run --env-file .env starlight-app python manage.py migrate
+   docker run --env-file .env starlight-app python manage.py import_catalog
+   ```
+   - `migrate` creates the tables; only needs to happen once per database file.
+   - `import_catalog` pulls the active satellites from CelesTrak so the catalog isn’t empty. Skip it if you already populated the table.
+
+5. **Run the container** with the web server exposed:
    ```bash
    docker run --env-file .env -p 8000:8000 starlight-app
    ```
-   - The app runs on port 8000 inside the container but is mapped to port 8000 on your machine.
-   - If you have not applied migrations before, run them once with:
-     ```bash
-     docker run --env-file .env starlight-app python manage.py migrate
-     ```
-   - Populate the satellite catalog (only needed the first time) with:
-     ```bash
-     docker run --env-file .env starlight-app python manage.py import_catalog
-     ```
-5. **Open the site** in your browser at [http://localhost:8000](http://localhost:8000).
+   The app listens on port 8000 inside the container and Docker maps it to port 8000 on your machine.
+6. **Open the site** in your browser at [http://localhost:8000](http://localhost:8000).
 
 ## Troubleshooting
 
