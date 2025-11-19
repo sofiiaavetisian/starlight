@@ -1,0 +1,20 @@
+[run]
+source =
+    satellite_tracker
+    satellites
+omit =
+    */migrations/*
+    manage.py
+    */tests/*
+data_file = reports/.coverage
+
+[report]
+fail_under = 70
+show_missing = True
+skip_covered = True
+
+[html]
+directory = reports/coverage_html
+
+[xml]
+output = reports/coverage.xml

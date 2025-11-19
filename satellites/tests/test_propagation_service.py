@@ -10,7 +10,7 @@ from satellites.services import propagation
 class PropagationServiceTests(SimpleTestCase):
     def test_gmst_from_jd_matches_known_value(self):
         gmst = propagation._gmst_from_jd(2451545.0)
-        expected = math.radians(100.46061837)
+        expected = 4.89496121282306  # radians at J2000
         self.assertAlmostEqual(gmst, expected, places=6)
 
     @mock.patch("satellites.services.propagation._ecef_to_geodetic")

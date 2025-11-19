@@ -70,3 +70,15 @@ python manage.py runserver
 ```
 
 You can still reuse the `.env` file by loading the values manually or with a tool like `django-environ` (not included).
+
+## Tests & Coverage
+
+Run the Django test suite with coverage enabled (required to stay above the 70% gate):
+
+```bash
+coverage run manage.py test
+coverage html
+coverage xml
+```
+
+Coverage artifacts are written to `reports/` (`reports/.coverage`, `reports/coverage_html/`, `reports/coverage.xml`). The `.coveragerc` configuration enforces `fail_under = 70`, so CI or local runs will fail if overall coverage slips under the assignment threshold.
