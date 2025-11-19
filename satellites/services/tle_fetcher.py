@@ -16,6 +16,7 @@ def parse_tle_catalog(text: str) -> List[Dict]:
 
     lines = [l.strip() for l in text.splitlines() if l.strip()]
     records = []
+    # process lines in groups of three (name, line1, line2)
     for i in range(0, len(lines), 3):
         if i + 2 >= len(lines): break
         name = lines[i]
@@ -27,6 +28,7 @@ def parse_tle_catalog(text: str) -> List[Dict]:
             norad_id = int(line1[2:7])
         except ValueError:
             continue
+        # add the parsed record to the list
         records.append({"norad_id": norad_id, "name": name, "line1": line1, "line2": line2})
 
     # return the list of parsed TLE records
@@ -36,6 +38,7 @@ def upsert_tles(records: List[Dict]) -> int:
 
     """Given a list of TLE records (returened from parse_tle_catalog), put them into the database, TLE table."""
     count = 0
+    # for each record, update or create the TLE entry
     for r in records:
         TLE.objects.update_or_create(
             norad_id=r["norad_id"],
@@ -52,6 +55,7 @@ def fetch_tle_from_celestrak(norad_id: int) -> Tuple[str, str, str]:
     hand back the name plus the two lines in a tuple."""
 
     url = CELESTRAK_TLE_BY_CATNR.format(norad_id=norad_id)
+    # fetch the TLE data from CelesTrak
     with httpx.Client(timeout=15.0, follow_redirects=True) as client:
         r = client.get(url)
         r.raise_for_status()
@@ -61,6 +65,7 @@ def fetch_tle_from_celestrak(norad_id: int) -> Tuple[str, str, str]:
         recs = parse_tle_catalog(text)
         if not recs:
             raise TLENotFound(f"Unable to parse TLE for {norad_id}")
+        # should only be one record for a specific NORAD ID
         rec = recs[0]
 
         # return the name, line1, line2
