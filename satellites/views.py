@@ -13,6 +13,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 from .models import Favorite
 from .serializers import FavoriteSerializer
 from django.contrib.auth.forms import UserCreationForm
@@ -27,9 +28,19 @@ def _catalog_label(tle: TLE) -> str:
     return name or f"NORAD {tle.norad_id}"
 
 class FavoriteViewSet(viewsets.ModelViewSet):
-    """API endpoint for viewing and editing user favorites"""
-    queryset = Favorite.objects.all()
+    """API endpoint for viewing and editing user favorites for the authenticated user."""
+
     serializer_class = FavoriteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Favorite.objects.none()
+        return Favorite.objects.filter(user=self.request.user).order_by("-created_at")
+
+    def perform_create(self, serializer):
+        """Tie newly created favorites to the requesting user."""
+        serializer.save(user=self.request.user)
 
 class SignUpView(CreateView):
     """View for user signup."""
