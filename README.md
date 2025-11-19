@@ -1,4 +1,4 @@
-# Starlight
+# Starlight ![CI](https://github.com/sofiiaavetisian/starlight/actions/workflows/ci.yml/badge.svg)
 
 ## Run the Project Locally (Docker)
 
@@ -82,3 +82,7 @@ coverage xml
 ```
 
 Coverage artifacts are written to `reports/` (`reports/.coverage`, `reports/coverage_html/`, `reports/coverage.xml`). The `.coveragerc` configuration enforces `fail_under = 70`, so CI or local runs will fail if overall coverage slips under the assignment threshold.
+
+## Continuous Integration
+
+A GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push/PR to `main`. It installs dependencies, executes `coverage run manage.py test` (so the 70% gate is enforced automatically), publishes the coverage reports in `reports/`, and then builds the Docker image via `docker build -t starlight-app .`. The workflow fails immediately if tests or coverage fail, which keeps `main` healthy.
