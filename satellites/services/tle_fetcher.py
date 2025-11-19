@@ -1,8 +1,14 @@
 from __future__ import annotations
 import httpx
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Protocol, Optional
 from datetime import datetime, timedelta, timezone
 from satellites.models import TLE
+
+class HTTPResponse(Protocol):
+    status_code: int
+    text: str
+
+    def raise_for_status(self) -> None: ...
 
 # CelesTrak provides a simple REST endpoint to fetch TLE data by NORAD ID
 CELESTRAK_TLE_BY_CATNR = "https://celestrak.org/NORAD/elements/gp.php?CATNR={norad_id}&FORMAT=TLE"
@@ -48,7 +54,12 @@ def upsert_tles(records: List[Dict]) -> int:
 
     return count
 
-def fetch_tle_from_celestrak(norad_id: int) -> Tuple[str, str, str]:
+class HTTPClient(Protocol):
+    def get(self, url: str) -> HTTPResponse: ...
+    def close(self) -> None: ...
+
+
+def fetch_tle_from_celestrak(norad_id: int, *, client: Optional[HTTPClient] = None) -> Tuple[str, str, str]:
 
     """Little helper that grabs the latest TLE from CelesTrak so I don't have to copy-paste it. 
     I hit their REST endpoint, double-check the response actually looks like a TLE, and
@@ -56,26 +67,28 @@ def fetch_tle_from_celestrak(norad_id: int) -> Tuple[str, str, str]:
 
     url = CELESTRAK_TLE_BY_CATNR.format(norad_id=norad_id)
     # fetch the TLE data from CelesTrak
-    with httpx.Client(timeout=15.0, follow_redirects=True) as client:
-        r = client.get(url)
-        r.raise_for_status()
-        text = r.text.strip()
+    close_client = client is None
+    use_client = client or httpx.Client(timeout=15.0, follow_redirects=True)
+    try:
+        response = use_client.get(url)
+        response.raise_for_status()
+        text = response.text.strip()
         if not text:
             raise TLENotFound(f"No TLE returned for {norad_id}")
         recs = parse_tle_catalog(text)
         if not recs:
             raise TLENotFound(f"Unable to parse TLE for {norad_id}")
-        # should only be one record for a specific NORAD ID
         rec = recs[0]
-
-        # return the name, line1, line2
         return rec["name"], rec["line1"], rec["line2"]
+    finally:
+        if close_client:
+            use_client.close()
     
 
-def get_or_refresh_tle(norad_id: int, max_age_hours: int = 48) -> Tuple[str, str, str]:
+def get_or_refresh_tle(norad_id: int, max_age_hours: int = 48, *, now: Optional[datetime] = None, client: Optional[HTTPClient] = None) -> Tuple[str, str, str]:
     """Return a recent TLE for norad_id, fetching from CelesTrak if older than 2 days."""
     tle = TLE.objects.filter(norad_id=norad_id).first()
-    now = datetime.now(timezone.utc)
+    now = now or datetime.now(timezone.utc)
     if tle and tle.updated_at:
         # if the TLE is recent enough, return it, otherwise fetch a new one
         age = now - tle.updated_at.replace(tzinfo=timezone.utc)
@@ -83,7 +96,7 @@ def get_or_refresh_tle(norad_id: int, max_age_hours: int = 48) -> Tuple[str, str
             return tle.name, tle.line1, tle.line2
         
     # fetch a new TLE from CelesTrak if its too old
-    name, l1, l2 = fetch_tle_from_celestrak(norad_id)
+    name, l1, l2 = fetch_tle_from_celestrak(norad_id, client=client)
     if tle:
         tle.name, tle.line1, tle.line2 = name, l1, l2
         tle.save(update_fields=["name", "line1", "line2", "updated_at"])

@@ -51,7 +51,7 @@ def _gmst_from_jd(jd_ut1: float) -> float:
 # for this function, i simplified teh sgp4 algorithm available online to meet my basic needs
 # we need this function to propagate the satellite position to the current time based on its time and orbit epoch
 
-def propagate_now(line1: str, line2: str):
+def propagate_now(line1: str, line2: str, *, timestamp: datetime | None = None):
     """Taking the raw fetched TLE lines and propagate them to "right now" so I can plot the satellite at this point of time.
     I am calling the SGP4 (a widely used algortithm for satellite orbit propagation).
     That algorithm outputs the vector containing r (satellites coordinates in km), v (satellites velocity)--> but they are in TEME frame, 
@@ -60,7 +60,7 @@ def propagate_now(line1: str, line2: str):
 
     --> returns a dictionary with lat, lon, alt_km, vel_kms, timestamp"""
 
-    now = datetime.now(timezone.utc)
+    now = timestamp or datetime.now(timezone.utc)
     sat = Satrec.twoline2rv(line1, line2)
 
     # computing the Julian date and fraction for the current time (the time when we want to know the satellite's position)
