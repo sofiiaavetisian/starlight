@@ -68,11 +68,16 @@ jobs:
               --username "$REGISTRY_USERNAME" \
               --password "$REGISTRY_PASSWORD"
 
+            # Set or update secrets separately for existing app
+            az containerapp secret set \
+              --name "$CONTAINERAPP_NAME" \
+              --resource-group "$RESOURCE_GROUP" \
+              --secrets django-secret-key="$DJANGO_SECRET_KEY"
+
             az containerapp update \
               --name "$CONTAINERAPP_NAME" \
               --resource-group "$RESOURCE_GROUP" \
               --image "$IMAGE" \
-              --secrets django-secret-key="$DJANGO_SECRET_KEY" \
               --set-env-vars \
                 SECRET_KEY=secretref:django-secret-key \
                 DJANGO_ALLOWED_HOSTS="$DJANGO_ALLOWED_HOSTS" \
@@ -101,4 +106,3 @@ jobs:
                 DEBUG=0 \
                 PYTHONDONTWRITEBYTECODE=1 \
                 PYTHONUNBUFFERED=1
-          fi
