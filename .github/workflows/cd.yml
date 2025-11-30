@@ -63,8 +63,9 @@ jobs:
           IMAGE="$REGISTRY_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}"
 
           if az containerapp show --name "$CONTAINERAPP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
-            echo "Container App exists, setting registry and updating..."
+            echo "Container App exists, setting registry, secrets and updating..."
 
+            # Ensure registry credentials are set
             az containerapp registry set \
               --name "$CONTAINERAPP_NAME" \
               --resource-group "$RESOURCE_GROUP" \
@@ -72,11 +73,17 @@ jobs:
               --username "$REGISTRY_USERNAME" \
               --password "$REGISTRY_PASSWORD"
 
+            # Update secrets (update no longer supports --secrets)
+            az containerapp secret set \
+              --name "$CONTAINERAPP_NAME" \
+              --resource-group "$RESOURCE_GROUP" \
+              --secrets django-secret-key="$DJANGO_SECRET_KEY" postgres-password="$POSTGRES_PASSWORD"
+
+            # Update image and environment variables
             az containerapp update \
               --name "$CONTAINERAPP_NAME" \
               --resource-group "$RESOURCE_GROUP" \
               --image "$IMAGE" \
-              --secrets django-secret-key="$DJANGO_SECRET_KEY" postgres-password="$POSTGRES_PASSWORD" \
               --set-env-vars \
                 SECRET_KEY=secretref:django-secret-key \
                 DJANGO_ALLOWED_HOSTS="$DJANGO_ALLOWED_HOSTS" \
