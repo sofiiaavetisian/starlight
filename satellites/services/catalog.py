@@ -14,19 +14,35 @@ def catalog_label(name: Optional[str], norad_id: int) -> str:
     return clean or f"NORAD {norad_id}"
 
 
-def list_catalog_entries() -> List[Dict[str, object]]:
-    """Return lightweight catalog entries ready for template rendering."""
-    entries = []
-    for tle in TLE.objects.only("norad_id", "name"):
-        name = _clean_name(tle.name)
+def list_catalog_entries(limit: int | None = 1000) -> List[Dict[str, object]]:
+    """
+    Return lightweight catalog entries ready for template rendering.
+
+    Optimized to:
+    - Let the database handle ordering
+    - Optionally limit the number of rows (default 1000)
+    - Use .values() instead of full model instances
+    """
+    qs = (
+        TLE.objects
+        .values("norad_id", "name")
+        .order_by("name", "norad_id")  # DB handles sorting
+    )
+
+    if limit is not None:
+        qs = qs[:limit]
+
+    entries: List[Dict[str, object]] = []
+    for row in qs:
+        name = _clean_name(row["name"])
         entries.append(
             {
-                "norad_id": tle.norad_id,
+                "norad_id": row["norad_id"],
                 "name": name,
-                "label": catalog_label(name, tle.norad_id),
+                "label": catalog_label(name, row["norad_id"]),
             }
         )
-    entries.sort(key=lambda entry: entry["label"].lower())
+
     return entries
 
 
