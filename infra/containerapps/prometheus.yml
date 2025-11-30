@@ -1,0 +1,7 @@
+scrape_configs:
+  - job_name: starlight
+    metrics_path: /metrics
+    scrape_interval: 30s
+    static_configs:
+      - targets:
+          - starlight-webapp.thankfulbush-e9327f34.westeurope.azurecontainerapps.io
