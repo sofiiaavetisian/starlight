@@ -1,5 +1,7 @@
 # Starlight ![CI](https://github.com/sofiiaavetisian/starlight/actions/workflows/ci.yml/badge.svg)
 
+Live deployment: https://starlight-webapp.thankfulbush-e9327f34.westeurope.azurecontainerapps.io/
+
 ## Run the Project Locally (Docker)
 
 Follow these steps to build and run the app inside a Docker container. The only local dependency you need is Docker.
@@ -141,15 +143,11 @@ If anything fails, check the workflow logs in GitHub Actions or re-run the `az` 
 The production deployment runs entirely inside Azure but mirrors the local Docker experience so features behave consistently.
 
 - **Container Registry:** Every GitHub push builds `starlight-app` and pushes both `:SHA` and `:latest` tags to Azure Container Registry (`starlightsofiia.azurecr.io`). The registry never exposes credentials in git; the CD workflow logs in with the `AZURE_CREDENTIALS` secret and the container app pulls images using ACR admin credentials stored as GitHub secrets.
-- **Container Apps Environment:** `starlight-env` hosts two Container Apps:
-  - `starlight-webapp` – Gunicorn + Django with public HTTPS ingress on port 8000.
-  - `starlight-db` – PostgreSQL 16 container with **internal-only** ingress.
-  Both containers live on the same virtual network with built-in DNS, so Django reaches the DB via `starlight-db.internal.<env>.westeurope.azurecontainerapps.io` while the database stays off the public internet.
-- **Persistent Storage:** The database container mounts an Azure File share that the setup script provisions, so data survives restarts.
-- **Secrets & Settings:** Django’s `SECRET_KEY`, database credentials, and allowed hosts are injected through Azure Container Apps secrets that the CD workflow sets (`az containerapp registry/secret set`). Nothing sensitive is committed to the repo.
+- **Container Apps Environment:** `starlight-env` currently hosts a single Container App, `starlight-webapp`, which runs Gunicorn + Django with public HTTPS ingress on port 8000. The app uses the same settings layout as the local Docker image so behavior remains consistent.
+- **Secrets & Settings:** Django’s `SECRET_KEY`, database credentials (if using an external DB), and allowed hosts are injected through Azure Container Apps secrets that the CD workflow sets (`az containerapp registry/secret set`). Nothing sensitive is committed to the repo.
 - **Observability:** Container Apps sends logs to Log Analytics (`starlight-logs`). You can view live logs via the Azure Portal or `az containerapp logs show`. Health checks are exposed through Azure’s revision view, and additional probes can be layered onto Gunicorn if needed.
 
-This layout satisfies the “two containers” requirement (isolated DB + web tier), keeps traffic private between services, and allows rollbacks by switching Container App revisions.
+This layout keeps the deployment simple—one container per release—while still supporting repeatable rollouts and quick rollbacks via Container App revisions.
 
 ## Monitoring & Health Checks
 
