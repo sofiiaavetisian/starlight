@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from satellite_tracker.health import health_status
 from satellites.views import (
     catalog,
     catalog_search,
@@ -40,4 +41,6 @@ urlpatterns = [
     path('accounts/signup/', SignUpView.as_view(), name='signup'), # user signup
     path('accounts/', include('django.contrib.auth.urls')), # authentication (login/logout)
     path('api/', include('satellites.urls')),  # API endpoints
+    path('health/', health_status, name='health'),  # simple health probe
+    path('', include('django_prometheus.urls')),  # /metrics endpoint
 ]

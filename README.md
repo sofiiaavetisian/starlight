@@ -135,3 +135,35 @@ Pushes to `main` run `.github/workflows/cd.yml`, which builds the Docker image, 
      4. Create or update the `starlight-web` Container App so it pulls the new image, exposes port 8000 publicly, and injects all Django/PostgreSQL env vars (DB password is supplied as an Azure Container Apps secret).
 
 If anything fails, check the workflow logs in GitHub Actions or re-run the `az` commands locally with the same service principal.
+
+## Production Architecture Overview
+
+The production deployment runs entirely inside Azure but mirrors the local Docker experience so features behave consistently.
+
+- **Container Registry:** Every GitHub push builds `starlight-app` and pushes both `:SHA` and `:latest` tags to Azure Container Registry (`starlightsofiia.azurecr.io`). The registry never exposes credentials in git; the CD workflow logs in with the `AZURE_CREDENTIALS` secret and the container app pulls images using ACR admin credentials stored as GitHub secrets.
+- **Container Apps Environment:** `starlight-env` hosts two Container Apps:
+  - `starlight-webapp` – Gunicorn + Django with public HTTPS ingress on port 8000.
+  - `starlight-db` – PostgreSQL 16 container with **internal-only** ingress.
+  Both containers live on the same virtual network with built-in DNS, so Django reaches the DB via `starlight-db.internal.<env>.westeurope.azurecontainerapps.io` while the database stays off the public internet.
+- **Persistent Storage:** The database container mounts an Azure File share that the setup script provisions, so data survives restarts.
+- **Secrets & Settings:** Django’s `SECRET_KEY`, database credentials, and allowed hosts are injected through Azure Container Apps secrets that the CD workflow sets (`az containerapp registry/secret set`). Nothing sensitive is committed to the repo.
+- **Observability:** Container Apps sends logs to Log Analytics (`starlight-logs`). You can view live logs via the Azure Portal or `az containerapp logs show`. Health checks are exposed through Azure’s revision view, and additional probes can be layered onto Gunicorn if needed.
+
+This layout satisfies the “two containers” requirement (isolated DB + web tier), keeps traffic private between services, and allows rollbacks by switching Container App revisions.
+
+## Monitoring & Health Checks
+
+- **Health endpoint:** `/health/` responds with a JSON payload describing app + database status. Azure Container Apps (or any load balancer) can hit this endpoint to confirm the app is alive. A failed database check returns HTTP 503 so Azure can restart unhealthy revisions.
+- **Prometheus metrics:** `/metrics` is provided by `django-prometheus` and exports counters/histograms for request totals, latency, and errors (per view, response code, etc.). Sample Prometheus scrape job:
+  ```yaml
+  scrape_configs:
+    - job_name: starlight
+      metrics_path: /metrics
+      scrape_interval: 30s
+      static_configs:
+        - targets:
+            - starlight-webapp.thankfulbush-e9327f34.westeurope.azurecontainerapps.io
+  ```
+- **Grafana/Container Apps logs:** Prometheus data can be visualized in Grafana with latency/error dashboards. If Prometheus isn’t available, Azure’s built-in Log Analytics workspace (`starlight-logs`) already captures all stdout/stderr logs for both containers, so you can plot requests vs. errors directly in Azure Monitor.
+
+Together these checks cover external health (HTTP status) and internal metrics (per-request timings), making it easy to hook the app into Azure alerts or Grafana dashboards.
