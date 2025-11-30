@@ -55,17 +55,12 @@ jobs:
           CONTAINERAPP_NAME: ${{ secrets.AZURE_CONTAINERAPPS_APP_NAME }}
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
-          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
           IMAGE="$REGISTRY_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}"
 
           if az containerapp show --name "$CONTAINERAPP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
-            echo "Container App exists, setting registry, secrets and updating..."
+            echo "Container App exists, setting registry and updating..."
 
-            # Ensure registry credentials are set
             az containerapp registry set \
               --name "$CONTAINERAPP_NAME" \
               --resource-group "$RESOURCE_GROUP" \
@@ -73,26 +68,15 @@ jobs:
               --username "$REGISTRY_USERNAME" \
               --password "$REGISTRY_PASSWORD"
 
-            # Update secrets (update no longer supports --secrets)
-            az containerapp secret set \
-              --name "$CONTAINERAPP_NAME" \
-              --resource-group "$RESOURCE_GROUP" \
-              --secrets django-secret-key="$DJANGO_SECRET_KEY" postgres-password="$POSTGRES_PASSWORD"
-
-            # Update image and environment variables
             az containerapp update \
               --name "$CONTAINERAPP_NAME" \
               --resource-group "$RESOURCE_GROUP" \
               --image "$IMAGE" \
+              --secrets django-secret-key="$DJANGO_SECRET_KEY" \
               --set-env-vars \
                 SECRET_KEY=secretref:django-secret-key \
                 DJANGO_ALLOWED_HOSTS="$DJANGO_ALLOWED_HOSTS" \
                 DEBUG=0 \
-                POSTGRES_HOST="$POSTGRES_HOST" \
-                POSTGRES_DB="$POSTGRES_DB" \
-                POSTGRES_USER="$POSTGRES_USER" \
-                POSTGRES_PASSWORD=secretref:postgres-password \
-                POSTGRES_PORT=5432 \
                 PYTHONDONTWRITEBYTECODE=1 \
                 PYTHONUNBUFFERED=1
           else
@@ -110,16 +94,11 @@ jobs:
               --target-port 8000 \
               --min-replicas 1 \
               --max-replicas 1 \
-              --secrets django-secret-key="$DJANGO_SECRET_KEY" postgres-password="$POSTGRES_PASSWORD" \
+              --secrets django-secret-key="$DJANGO_SECRET_KEY" \
               --env-vars \
                 SECRET_KEY=secretref:django-secret-key \
                 DJANGO_ALLOWED_HOSTS="$DJANGO_ALLOWED_HOSTS" \
                 DEBUG=0 \
-                POSTGRES_HOST="$POSTGRES_HOST" \
-                POSTGRES_DB="$POSTGRES_DB" \
-                POSTGRES_USER="$POSTGRES_USER" \
-                POSTGRES_PASSWORD=secretref:postgres-password \
-                POSTGRES_PORT=5432 \
                 PYTHONDONTWRITEBYTECODE=1 \
                 PYTHONUNBUFFERED=1
           fi
