@@ -29,7 +29,7 @@ Follow these steps to build and run the app inside a Docker container. The only 
    ```bash
    docker run --env-file .env -p 8000:8000 starlight-app
    ```
-   The app listens on port 8000 inside the container and Docker maps it to port 8000 on your machine.
+   The app now uses Gunicorn inside the container. It still listens on port 8000, and Docker maps it to port 8000 on your machine.
 6. **Open the site** in your browser at [http://localhost:8000](http://localhost:8000).
 
 ## Troubleshooting
@@ -86,3 +86,52 @@ Coverage artifacts are written to `reports/` (`reports/.coverage`, `reports/cove
 ## Continuous Integration
 
 A GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push/PR to `main`. It installs dependencies, executes `coverage run manage.py test` (so the 70% gate is enforced automatically), publishes the coverage reports in `reports/`, and then builds the Docker image via `docker build -t starlight-app .`. The workflow fails immediately if tests or coverage fail, which keeps `main` healthy.
+
+## Continuous Deployment (Azure Container Apps)
+
+Pushes to `main` run `.github/workflows/cd.yml`, which builds the Docker image, pushes it to Azure Container Registry (ACR), and updates an Azure Container Apps deployment that hosts both the Django container and a PostgreSQL container (provisioned once up front). Secrets are injected via GitHub Actions so nothing sensitive lands in git.
+
+1. **One-time Azure setup**
+   - Ensure you have an ACR in the provided resource group: `az acr create --name <acrName> --resource-group <rg> --sku Basic`.
+   - Run the helper script to provision Container Apps + PostgreSQL:
+     ```bash
+     az login --service-principal --username <appId> --password <clientSecret> --tenant <tenantId>
+     export RESOURCE_GROUP=<rg>
+     export LOCATION=<region>
+     export CONTAINERAPPS_ENVIRONMENT=starlight-env
+     export LOG_ANALYTICS_WORKSPACE=starlight-logs
+     export STORAGE_ACCOUNT_NAME=<unique storage name>
+     export STORAGE_FILE_SHARE=starlightpg
+     export POSTGRES_APP_NAME=starlight-db
+     export POSTGRES_DB=starlight
+     export POSTGRES_USER=starlight
+     export POSTGRES_PASSWORD=<strong password>
+     bash infra/containerapps/setup.sh
+     ```
+     The script registers required providers (if needed), creates the Container Apps environment + Log Analytics workspace, provisions Azure Files storage, and deploys the PostgreSQL container (internal ingress only). It prints the database FQDN when finished.
+
+2. **Create GitHub secrets** (Repository → Settings → Secrets and variables → Actions).
+   - Azure auth & registry:
+     - `AZURE_CREDENTIALS`: Service-principal JSON (clientId, clientSecret, tenantId, subscriptionId, etc.).
+     - `AZURE_CONTAINER_REGISTRY`: ACR name (e.g., `mystarlightacr`).
+     - `AZURE_CONTAINER_REGISTRY_LOGIN_SERVER`: The login server (`mystarlightacr.azurecr.io`).
+     - `AZURE_RESOURCE_GROUP`: Resource group name.
+     - `AZURE_CONTAINERAPPS_ENVIRONMENT`: Name passed to the setup script (e.g., `starlight-env`).
+     - `AZURE_CONTAINERAPPS_APP_NAME`: Desired name for the Django container app (e.g., `starlight-web`).
+   - Django config:
+     - `DJANGO_SECRET_KEY`: Production secret key.
+     - `DJANGO_ALLOWED_HOSTS`: Comma-separated hostname(s) (use the Container App FQDN or a custom domain routed to it).
+   - Database connection (values printed by the setup script or chosen by you):
+     - `POSTGRES_HOST`: Internal FQDN (for example `starlight-db.internal.<env>.<region>.azurecontainerapps.io`).
+     - `POSTGRES_DB`
+     - `POSTGRES_USER`
+     - `POSTGRES_PASSWORD`
+
+3. **Deploy automatically**
+   - Push/merge to `main`. The workflow will:
+     1. Log in to Azure with the service principal.
+     2. Build the Docker image and push both `:SHA` and `:latest` tags to ACR.
+     3. Ensure the Container Apps CLI extension is installed.
+     4. Create or update the `starlight-web` Container App so it pulls the new image, exposes port 8000 publicly, and injects all Django/PostgreSQL env vars (DB password is supplied as an Azure Container Apps secret).
+
+If anything fails, check the workflow logs in GitHub Actions or re-run the `az` commands locally with the same service principal.
