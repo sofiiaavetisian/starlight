@@ -106,3 +106,4 @@ jobs:
                 DEBUG=0 \
                 PYTHONDONTWRITEBYTECODE=1 \
                 PYTHONUNBUFFERED=1
+          fi
