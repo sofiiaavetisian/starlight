@@ -48,6 +48,8 @@ jobs:
       - name: Deploy Django container to Azure Container Apps
         env:
           REGISTRY_LOGIN_SERVER: ${{ secrets.AZURE_CONTAINER_REGISTRY_LOGIN_SERVER }}
+          REGISTRY_USERNAME: ${{ secrets.AZURE_CONTAINER_REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.AZURE_CONTAINER_REGISTRY_PASSWORD }}
           RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
           CONTAINERAPPS_ENVIRONMENT: ${{ secrets.AZURE_CONTAINERAPPS_ENVIRONMENT }}
           CONTAINERAPP_NAME: ${{ secrets.AZURE_CONTAINERAPPS_APP_NAME }}
@@ -61,6 +63,15 @@ jobs:
           IMAGE="$REGISTRY_LOGIN_SERVER/$IMAGE_NAME:${{ github.sha }}"
 
           if az containerapp show --name "$CONTAINERAPP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
+            echo "Container App exists, setting registry and updating..."
+
+            az containerapp registry set \
+              --name "$CONTAINERAPP_NAME" \
+              --resource-group "$RESOURCE_GROUP" \
+              --server "$REGISTRY_LOGIN_SERVER" \
+              --username "$REGISTRY_USERNAME" \
+              --password "$REGISTRY_PASSWORD"
+
             az containerapp update \
               --name "$CONTAINERAPP_NAME" \
               --resource-group "$RESOURCE_GROUP" \
@@ -78,11 +89,16 @@ jobs:
                 PYTHONDONTWRITEBYTECODE=1 \
                 PYTHONUNBUFFERED=1
           else
+            echo "Container App does not exist, creating..."
+
             az containerapp create \
               --name "$CONTAINERAPP_NAME" \
               --resource-group "$RESOURCE_GROUP" \
               --environment "$CONTAINERAPPS_ENVIRONMENT" \
               --image "$IMAGE" \
+              --registry-server "$REGISTRY_LOGIN_SERVER" \
+              --registry-username "$REGISTRY_USERNAME" \
+              --registry-password "$REGISTRY_PASSWORD" \
               --ingress external \
               --target-port 8000 \
               --min-replicas 1 \
