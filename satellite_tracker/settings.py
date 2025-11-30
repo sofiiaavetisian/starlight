@@ -34,6 +34,15 @@ ALLOWED_HOSTS = [host.strip() for host in os.environ.get(
     "127.0.0.1,localhost, 0.0.0.0",
 ).split(",") if host.strip()]
 
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        "DJANGO_CSRF_TRUSTED_ORIGINS",
+        "https://starlight-webapp.thankfulbush-e9327f34.westeurope.azurecontainerapps.io",
+    ).split(",")
+    if origin.strip()
+]
+
 
 # Application definition
 
