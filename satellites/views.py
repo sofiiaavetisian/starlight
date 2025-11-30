@@ -21,6 +21,9 @@ from .services.tracking import (
     satellite_position_payload,
 )
 from satellites.services.tle_fetcher import TLENotFound
+import logging
+logger = logging.getLogger(__name__)
+
 
 """ In this file are the views for the satellites app, including web pages and API endpoints. """
 
@@ -83,11 +86,16 @@ def favorite_remove(request, norad_id: int):
 
 def catalog(request):
     """View for the satellite catalog page."""
+    logger.info("Catalog view: start")
+
+    satellites = list_catalog_entries()
+    logger.info("Catalog view: loaded %s satellites", len(satellites))
 
     context = {
-        "satellites": list_catalog_entries(),
+        "satellites": satellites,
         "search_term": request.GET.get("q", "").strip(),
     }
+    logger.info("Catalog view: rendering template")
     return render(request, "catalog.html", context)
 
 
